@@ -70,6 +70,7 @@ pub fn run(
     command: &[OsString],
     vars: &BTreeMap<String, String>,
     declared_secrets: &[String],
+    mut net_leaks: Option<&mut crate::netguard::NetGuard>,
 ) -> Result<i32> {
     if command.is_empty() {
         anyhow::bail!("nothing to run");
@@ -108,7 +109,7 @@ pub fn run(
     let mut hit: Option<String> = None;
     let mut status: Option<std::process::ExitStatus> = None;
 
-    while status.is_none() && hit.is_none() {
+    loop {
         match rx.try_recv() {
             Ok(label) => hit = Some(label),
             Err(TryRecvError::Disconnected) | Err(TryRecvError::Empty) => {}
@@ -116,24 +117,38 @@ pub fn run(
         if hit.is_some() {
             break;
         }
+        if let Some(net) = net_leaks.as_deref_mut() {
+            if let Some(label) = net.try_recv_leak() {
+                hit = Some(label);
+                break;
+            }
+        }
         match child.try_wait()? {
-            Some(done) => status = Some(done),
+            Some(done) => {
+                status = Some(done);
+                break;
+            }
             None => std::thread::sleep(Duration::from_millis(3)),
         }
     }
 
-    if let Some(leaked_var) = hit {
+    if let Some(raw_hit) = hit {
         let _ = child.kill();
         let _ = child.wait();
         for handle in pumps {
             let _ = handle.join();
         }
+        let (leaked_var, source_note) = match raw_hit.strip_prefix("NET::") {
+            Some(var) => (var.to_string(), "leaked over the network"),
+            None => (raw_hit, "leaked into process output"),
+        };
         eprintln!();
         eprintln!("{}", "── ENVY GUARD ──────────────────────────────".red().bold());
         eprintln!(
-            "{} secret value of {} leaked into process output.",
+            "{} secret value of {} {}.",
             "✖".red().bold(),
-            leaked_var.red().bold()
+            leaked_var.red().bold(),
+            source_note
         );
         eprintln!("{} process terminated before it could leak more.", "·".dimmed());
         eprintln!("{} fix the offending log/print statement and retry.", "·".dimmed());
@@ -147,6 +162,9 @@ pub fn run(
         let _ = handle.join();
     }
     while rx.try_recv().is_ok() {}
+    if let Some(net) = net_leaks.as_deref_mut() {
+        while net.try_recv_leak().is_some() {}
+    }
 
     Ok(match done.code() {
         Some(code) => code,
@@ -164,7 +182,7 @@ pub fn run(
 }
 
 /// (secret value → variable name) pairs the pump threads scan for.
-fn build_needles(
+pub(crate) fn build_needles(
     vars: &BTreeMap<String, String>,
     declared_secrets: &[String],
 ) -> Vec<(String, String)> {

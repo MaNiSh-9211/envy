@@ -12,7 +12,7 @@ use envy::prompt;
 use envy::resolver::{self, Layers, Options, Resolved};
 use envy::schema::EnvySchema;
 use envy::store;
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use colored::Colorize;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -138,6 +138,94 @@ pub fn report_problems(resolved: &Resolved) {
     for warning in &resolved.warnings {
         println!("{} {warning}", "·".dimmed());
     }
+}
+
+/// Smart tracking: surface variables teammates added or removed since the
+/// last local run, then refresh the snapshot.
+pub fn note_schema_drift(app: &App) {
+    let schema_text = match std::fs::read_to_string(&app.project.schema_path) {
+        Ok(text) => text,
+        Err(_) => return,
+    };
+    match envy::drift::check(app.project.dir(), &schema_text, &app.project.schema.config) {
+        Ok(Some(drift)) if !drift.is_empty() => {
+            if !drift.added.is_empty() {
+                println!(
+                    "{} new variable(s) from your team: {}",
+                    "⟳".cyan(),
+                    drift.added.join(", ").yellow()
+                );
+                println!(
+                    "{} fill them with {}",
+                    "·".dimmed(),
+                    "envy setup".cyan()
+                );
+            }
+            if !drift.removed.is_empty() {
+                println!(
+                    "{} removed from the schema: {}",
+                    "⟳".cyan(),
+                    drift.removed.join(", ").dimmed()
+                );
+            }
+        }
+        _ => {}
+    }
+    let _ = envy::drift::update(app.project.dir(), &schema_text, &app.project.schema.config);
+}
+
+pub struct ExportArgs {
+    pub format: String,
+    pub out: Option<PathBuf>,
+}
+
+pub fn export(args: ExportArgs, offline: bool) -> Result<()> {
+    if !envy::export::FORMATS.contains(&args.format.as_str()) {
+        bail!(
+            "unknown format '{}' — choose one of: {}",
+            args.format,
+            envy::export::FORMATS.join(", ")
+        );
+    }
+
+    let app = load_app()?;
+    let resolved = app.resolve(&envy::resolver::Options {
+        interactive: false,
+        resolve_vault: !offline,
+    });
+    report_problems(&resolved);
+    if abort_if_broken(&resolved) {
+        anyhow::bail!("cannot export an invalid configuration");
+    }
+
+    let rendered = envy::export::render(&args.format, &resolved.values);
+    let out_path = args
+        .out
+        .unwrap_or_else(|| app.project.dir().join(envy::export::default_filename(&args.format)));
+
+    std::fs::write(&out_path, &rendered)
+        .with_context(|| format!("writing {}", out_path.display()))?;
+
+    let secret_count = app
+        .project
+        .schema
+        .config
+        .values()
+        .filter(|spec| spec.secret)
+        .count();
+    println!(
+        "{} exported {} variable(s) → {}",
+        "✔".green().bold(),
+        resolved.values.len(),
+        out_path.display().to_string().cyan()
+    );
+    if secret_count > 0 {
+        println!(
+            "{} includes {secret_count} secret value(s) in plaintext — do not commit this file",
+            "!".yellow()
+        );
+    }
+    Ok(())
 }
 
 pub fn abort_if_broken(resolved: &Resolved) -> bool {

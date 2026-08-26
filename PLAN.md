@@ -104,18 +104,22 @@ Desktop/envy/
 - [x] **M2** CLI: init / run / validate / list / setup, process injection, exit codes
 - [x] **M3** Git-branch aware config hot-swapping (`envy.local.<branch>.yaml` overlay)
 - [x] **M4** Leak blocker pre-commit hook (`envy hook install`) scanning staged diffs
-- [x] **M5** Vault references in values (`op://…`, `vault://…`, `aws://…`) resolved in-memory
+- [x] **M5** Vault references in values (`op://…`, `vault://…`, `aws://…`, `bw://…`) resolved in-memory
 - [x] **M6** Encryption-at-rest via OS keystore (AES-256-GCM; Credential Manager / Keychain / Secret Service)
 - [ ] **M7** Release pipeline (workflows + wrapper packages scaffolded in `packages/`) → remaining: first tagged release, publish wrappers, fill Homebrew sha256s
 - [x] **M8** Runtime egress guard: `envy run --guard` streams child output through a secret scanner and terminates on leak (exit code 2)
+- [x] **M8b** Network-level guard: `envy run --guard-net` starts a scanning local HTTP proxy (HTTP_PROXY injection); leaking requests answered 403 + process killed; HTTPS tunnels blocked by default (`--allow-tls` to tunnel unscanned)
 - [x] **M9** Type-safe SDK generation: `envy gen typescript|go|java|python`
 - [x] **M10** `envy doctor` — did-you-mean fixes for bad values/schemes/keys (Damerau-Levenshtein)
 - [x] Bonus: `envy diff <env>` live environment comparison (secrets masked)
 - [x] Bonus: `mock: true` self-mocking — deterministic placeholder values so dev keeps coding offline
+- [x] Bonus: `mock_server: true` — spins up a live local HTTP endpoint and points the var at it
+- [x] Bonus: Smart tracking — drift notices when teammates add/remove schema variables (`.envy/state.json`)
+- [x] Bonus: `envy export env|docker|properties|json|yaml` — multi-format translation incl. Spring Boot `application.properties` and `.env.docker`
 
 ### Future ideas
 
-- Network-level egress proxying (beyond output scanning)
+- MITM TLS inspection with a generated local CA (opt-in) for full HTTPS body scanning
 - Embedded offline model for smarter error explanations
 - `envy import` from .env / application.properties / docker-compose env
 

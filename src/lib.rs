@@ -18,6 +18,8 @@
 
 pub mod crypto;
 pub mod discovery;
+pub mod drift;
+pub mod export;
 pub mod gencode;
 pub mod git;
 pub mod leakscan;

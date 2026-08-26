@@ -16,6 +16,7 @@ pub fn validate(offline: bool) -> Result<bool> {
         app.project.schema.service_name().bold(),
         app.project.schema_path.display().to_string().dimmed()
     );
+    super::note_schema_drift(&app);
     report_problems(&resolved);
 
     if resolved.errors.is_empty() && resolved.missing.is_empty() {
@@ -37,6 +38,7 @@ pub fn list(offline: bool) -> Result<()> {
         interactive: false,
         resolve_vault: !offline,
     });
+    super::note_schema_drift(&app);
     report_problems(&resolved);
 
     if let Some(branch) = &app.branch {

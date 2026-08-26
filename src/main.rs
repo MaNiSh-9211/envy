@@ -1,6 +1,8 @@
 mod cli;
 mod commands;
 mod guard;
+mod mockserver;
+mod netguard;
 
 use clap::Parser;
 use cli::{Cli, Commands};
@@ -12,8 +14,11 @@ fn main() {
 
     let result = match cli.command {
         Commands::Init => commands::init::execute().map(|_| 0),
-        Commands::Run { guard, command } => {
-            commands::run::execute(commands::run::RunArgs { guard, command }, offline)
+        Commands::Run { guard, guard_net, allow_tls, command } => {
+            commands::run::execute(
+                commands::run::RunArgs { guard, guard_net, allow_tls, command },
+                offline,
+            )
         }
         Commands::Validate => commands::inspect::validate(offline).map(|ok| i32::from(!ok)),
         Commands::List => commands::inspect::list(offline).map(|_| 0),
@@ -34,6 +39,7 @@ fn main() {
             package,
         })
         .map(|_| 0),
+        Commands::Export { format, out } => commands::export(commands::ExportArgs { format, out }, offline).map(|_| 0),
     };
 
     match result {

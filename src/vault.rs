@@ -5,10 +5,12 @@ pub fn is_ref(value: &str) -> bool {
     value.starts_with("op://")
         || value.starts_with("vault://")
         || value.starts_with("aws://")
+        || value.starts_with("bw://")
 }
 
-/// Resolve a reference through the matching CLI (1Password CLI, Vault CLI, AWS CLI).
-/// Values never touch disk — they live only in process memory.
+/// Resolve a reference through the matching CLI (1Password CLI, Vault CLI,
+/// AWS CLI, Bitwarden CLI). Values never touch disk — they live only in
+/// process memory.
 pub fn resolve(value: &str) -> Result<String, String> {
     if let Some(rest) = value.strip_prefix("op://") {
         return run("op", &["read", "--no-newline", value])
@@ -53,7 +55,29 @@ pub fn resolve(value: &str) -> Result<String, String> {
             }),
         };
     }
+    if let Some(rest) = value.strip_prefix("bw://") {
+        let (query, field) = match rest.split_once('#') {
+            Some((q, f)) if !f.is_empty() => (q.to_string(), f.to_string()),
+            _ => (rest.to_string(), "password".to_string()),
+        };
+        let args = build_bw_args(&field, &query)
+            .ok_or_else(|| format!("bw://{rest}: unknown field '{field}' (use password|username|uri|totp|notes|id)"))?;
+        return run("bw", &args).map_err(|err| format!("bw://{rest}: {err}"));
+    }
     Err(format!("unsupported secret reference scheme: {value}"))
+}
+
+fn build_bw_args<'a>(field: &'a str, query: &'a str) -> Option<Vec<&'a str>> {
+    let subcommand = match field {
+        "password" => "password",
+        "username" => "username",
+        "uri" => "uri",
+        "totp" => "totp",
+        "notes" => "notes",
+        "id" => "id",
+        _ => return None,
+    };
+    Some(vec!["get", subcommand, query])
 }
 
 fn extract_json_field(json: &str, key: &str) -> Option<String> {
@@ -89,8 +113,19 @@ mod tests {
         assert!(is_ref("op://vault/item/field"));
         assert!(is_ref("vault://secret/data/foo#password"));
         assert!(is_ref("aws://prod/stripe#key"));
+        assert!(is_ref("bw://team-api-key"));
+        assert!(is_ref("bw://uuid-here#username"));
         assert!(!is_ref("postgres://localhost/db"));
         assert!(!is_ref("sk_test_plainvalue"));
+    }
+
+    #[test]
+    fn bitwarden_arg_mapping() {
+        assert_eq!(
+            build_bw_args("password", "item-1"),
+            Some(vec!["get", "password", "item-1"])
+        );
+        assert_eq!(build_bw_args("banana", "x"), None);
     }
 
     #[test]

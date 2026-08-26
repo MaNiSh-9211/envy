@@ -1,6 +1,6 @@
 [package]
 name = "envy"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "envy — universal, blazing-fast environment configuration manager for every stack"
 license = "MIT"

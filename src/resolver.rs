@@ -146,11 +146,11 @@ fn place_value(
     }
 
     if spec.mock {
-        let mock = mock_value(key);
+        let mocked = mock_for(key, spec);
         out.warnings.push(format!(
-            "{key} has no value — using generated mock ({mock}) because mock: true is set"
+            "{key} has no value — using generated mock ({mocked}) because mock: true is set"
         ));
-        return Placement::Resolved(mock, SOURCE_MOCK);
+        return Placement::Resolved(mocked, SOURCE_MOCK);
     }
 
     if spec.required {
@@ -216,18 +216,69 @@ fn prompt_for(key: &str, spec: &VarSpec, errors: &mut Vec<String>) -> Option<Str
     None
 }
 
-/// Deterministic placeholder values for `mock: true` variables.
-pub fn mock_value(key: &str) -> String {
+/// Deterministic placeholder values for `mock: true` variables,
+/// shaped to satisfy the declared type/format.
+pub fn mock_for(key: &str, spec: &VarSpec) -> String {
+    let hex = hex_seed(key);
+    match spec.format.as_deref() {
+        Some("uri") | Some("url") => {
+            if spec.mock_server {
+                // replaced by a live local endpoint at launch time
+                format!("http://mock.local/{hex}")
+            } else {
+                let slug = key.to_lowercase().replace('_', "-");
+                format!("https://mock.local/{slug}/{hex}")
+            }
+        }
+        Some("email") => {
+            let slug = key.to_lowercase().replace('_', "-");
+            format!("{slug}@example.com")
+        }
+        Some("uuid") => format!(
+            "{}-{}-{}-{}-{}",
+            &hex[0..8],
+            &hex[8..12],
+            &hex[12..16],
+            &hex[16..20],
+            &hex[20..32]
+        ),
+        _ => match spec.r#type.as_str() {
+            "integer" => {
+                let n = u64::from_str_radix(&hex[..8], 16).unwrap_or(42);
+                (1000 + n % 90_000).to_string()
+            }
+            "number" | "float" => {
+                let n = u64::from_str_radix(&hex[..8], 16).unwrap_or(42);
+                format!("{}.{:02}", n % 1000, n % 100)
+            }
+            "boolean" | "bool" => {
+                if hex.starts_with(['0', '4', '8', 'c']) {
+                    "false".to_string()
+                } else {
+                    "true".to_string()
+                }
+            }
+            _ => format!("mock_{hex}"),
+        },
+    }
+}
+
+fn hex_seed(key: &str) -> String {
     use std::hash::{Hash, Hasher};
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     key.hash(&mut hasher);
     let seed = hasher.finish();
-    let hex: String = format!("{seed:016x}")
+    format!("{seed:016x}")
         .chars()
         .cycle()
         .take(32)
-        .collect();
-    format!("mock_{hex}")
+        .collect()
+}
+
+/// Deterministic string placeholder (string-typed secrets etc.).
+#[allow(dead_code)]
+pub fn mock_value(key: &str) -> String {
+    format!("mock_{}", hex_seed(key))
 }
 
 pub fn scalar_to_string(value: &serde_yaml::Value) -> Result<String, String> {

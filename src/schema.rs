@@ -27,8 +27,10 @@ pub struct VarSpec {
     #[serde(default)]
     pub secret: bool,
     #[serde(default)]
-    #[allow(dead_code)]
     pub mock: bool,
+    /// With `mock: true`, serve a live local HTTP endpoint instead of a static value.
+    #[serde(default)]
+    pub mock_server: bool,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]

@@ -97,7 +97,7 @@ the core Rust engine.
 | command | behaviour |
 |---|---|
 | `envy init` | scaffold an `envy.yaml` + gitignore `envy.local.yaml` |
-| `envy run [--guard] <cmd…>` | resolve → prompt → validate → spawn with injected env; `--guard` kills the process if a secret leaks into output (exit 2) |
+| `envy run [--guard] [--guard-net] <cmd…>` | resolve → prompt → validate → spawn with injected env; `--guard` scans child output for secrets; `--guard-net` routes traffic through a scanning local proxy (sets `HTTP_PROXY`/`HTTPS_PROXY`) and blocks leaking requests |
 | `envy validate` | CI-friendly non-interactive check |
 | `envy list` | resolved table, secrets masked, `[source]` tags |
 | `envy setup` | scan a monorepo, fill missing values for every service sequentially |
@@ -106,7 +106,31 @@ the core Rust engine.
 | `envy lock` / `envy unlock` | AES-256-GCM encrypt `envy.local.yaml` at rest, key held in the OS keystore |
 | `envy hook install` | pre-commit hook that blocks commits containing your declared secrets |
 | `envy scan [--all]` | leak-scan staged changes (or the whole tree) |
-| `envy gen <ts\|go\|java\|python>` | generate type-safe config bindings → autocomplete, no typos |
+| `envy gen <ts\|go\|java\|python>` | generate type-safe configuration bindings → autocomplete, no typos |
+| `envy export <env\|docker\|properties\|json\|yaml>` | translate config into native formats — Spring Boot `application.properties`, `.env.docker`, JSON, YAML |
+
+### Smart tracking (drift notices)
+
+Pull a branch where a teammate added variables? envy compares against your
+last-seen snapshot (`.envy/state.json`, gitignored) and tells you:
+
+```
+⟳ new variable(s) from your team: STRIPE_WEBHOOK_SECRET
+· fill them with envy setup
+```
+
+### Self-mocking servers
+
+```yaml
+MOCK_PAYMENT_API:
+  type: string
+  format: uri
+  mock: true
+  mock_server: true   # spins up a live local HTTP endpoint on launch
+```
+
+The variable points at a real running URL answering `{"mocked":true,...}` —
+your app integrates against a live endpoint even offline.
 
 ### Variable precedence
 
@@ -126,6 +150,7 @@ values:
   API_SECRET: "op://dev-vault/stripe/key"        # 1Password CLI
   DB_PASSWORD: "vault://secret/data/db#password" # Vault CLI
   STRIPE_KEY: "aws://prod/stripe#api_key"        # AWS Secrets Manager
+  SMTP_PASS: "bw://mail-server#password"         # Bitwarden CLI
 ```
 
 Run `--offline` to skip resolution on a plane.

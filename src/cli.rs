@@ -29,6 +29,14 @@ pub enum Commands {
         #[arg(long)]
         guard: bool,
 
+        /// Route child traffic through a scanning HTTP proxy (sets HTTP_PROXY/HTTPS_PROXY)
+        #[arg(long)]
+        guard_net: bool,
+
+        /// With --guard-net: tunnel HTTPS instead of refusing CONNECT
+        #[arg(long)]
+        allow_tls: bool,
+
         /// Command to execute, e.g. envy run npm run dev
         #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
         command: Vec<OsString>,
@@ -91,6 +99,16 @@ pub enum Commands {
         /// Package name for Go/Java output
         #[arg(long, default_value = "config")]
         package: String,
+    },
+
+    /// Translate config into a native format (.env, .env.docker, application.properties, json, yaml)
+    Export {
+        /// One of: env, docker, properties, json, yaml
+        format: String,
+
+        /// Output path (defaults to a conventional filename next to envy.yaml)
+        #[arg(long)]
+        out: Option<PathBuf>,
     },
 }
 
