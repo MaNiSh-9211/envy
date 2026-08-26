@@ -68,7 +68,7 @@ values:
 
 | Runtime | Command |
 |---|---|
-| npm | `npm install -g envy-cli` |
+| npm (CLI) | `npm install -g envy-cli` |
 | pip | `pip install envy-cli` |
 | RubyGems | `gem install envy-cli` |
 | Go | `go run github.com/MaNiSh-9211/envy/packages/go/cmd/envy-installer@latest` |
@@ -77,7 +77,17 @@ values:
 | Shell (mac/Linux) | `curl -fsSL https://raw.githubusercontent.com/MaNiSh-9211/envy/main/scripts/install.sh \| sh` |
 | PowerShell (Windows) | see [`scripts/install.ps1`](scripts/install.ps1) |
 
-All of them install the same native Rust binary.
+### Language libraries (no CLI required)
+
+Load and validate `envy.yaml` natively inside your app:
+
+| Library | Install | Import |
+|---|---|---|
+| TypeScript / Node | `npm install @envy/config` | [`loadConfig()`](packages/typescript#readme) — fully typed, throws `EnvyError` with all problems |
+| Java / JVM / Spring | `io.github.manish-9211:envy-java` | [`Envy.load()`](packages/maven#readme) — Map<String,String>, cached |
+
+All of them share the exact same precedence, validation and mock semantics as
+the core Rust engine.
 
 ## Commands
 

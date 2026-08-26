@@ -1,0 +1,39 @@
+{
+  "name": "@envy/config",
+  "version": "0.2.0",
+  "description": "Typed configuration loading for envy.yaml — validates, layers and mocks without the CLI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MaNiSh-9211/envy"
+  },
+  "homepage": "https://github.com/MaNiSh-9211/envy#readme",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "yaml": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "config",
+    "environment",
+    "env",
+    "typed",
+    "validation",
+    "monorepo",
+    "envy"
+  ]
+}

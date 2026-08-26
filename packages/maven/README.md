@@ -1,74 +1,74 @@
-# envy for Java / Spring Boot (Maven)
+# envy-java — Maven / Spring Boot library
 
-Java devs never need an npm/pip package. envy injects plain environment
-variables, so the JVM reads them natively via `System.getenv("PORT")` or
-Spring's `${PORT}` placeholder.
+Load and validate `envy.yaml` **natively inside any JVM application** — no CLI,
+no plugins, no external process. Works with plain Java, Spring Boot, Quarkus,
+Micronaut, Android backends… anything on the JVM.
 
-## One-time setup per project
-
-Add these two plugins to your `pom.xml`. The first downloads the platform
-binary during the `initialize` phase; the second lets you run anything through
-envy with `mvn envy` style profiles.
+## Add the dependency
 
 ```xml
-<plugin>
-  <groupId>com.googlecode.maven-download-plugin</groupId>
-  <artifactId>download-maven-plugin</artifactId>
-  <version>1.13.0</version>
-  <executions>
-    <execution>
-      <id>fetch-envy</id>
-      <phase>initialize</phase>
-      <goals>
-        <goal>wget</goal>
-      </goals>
-      <configuration>
-        <url>https://github.com/MaNiSh-9211/envy/releases/latest/download/${envy.asset}</url>
-        <outputDirectory>${project.build.directory}/envy</outputDirectory>
-        <outputFilename>envy${envy.ext}</outputFilename>
-      </configuration>
-    </execution>
-  </executions>
-</plugin>
-
-<plugin>
-  <groupId>org.codehaus.mojo</groupId>
-  <artifactId>exec-maven-plugin</artifactId>
-  <version>3.5.0</version>
-  <configuration>
-    <executable>${project.build.directory}/envy/envy${envy.ext}</executable>
-  </configuration>
-</plugin>
+<dependency>
+  <groupId>io.github.manish-9211</groupId>
+  <artifactId>envy-java</artifactId>
+  <version>0.2.0</version>
+</dependency>
 ```
 
-And in `<properties>` pick your platform asset:
+(Once published to Maven Central; until then `mvn install` this module locally.)
 
-```xml
-<properties>
-  <!-- windows -->
-  <envy.asset>envy-windows-amd64.exe</envy.asset>
-  <envy.ext>.exe</envy.ext>
-  <!-- mac arm: envy-darwin-arm64 | mac intel: envy-darwin-amd64 -->
-  <!-- linux amd64: envy-linux-amd64 | linux arm: envy-linux-arm64 -->
-</properties>
-```
-
-## Daily usage
-
-```bash
-mvn initialize                                   # fetch binary once
-envy run ./mvnw spring-boot:run                  # recommended: wrap maven itself
-```
-
-or purely inside Maven:
-
-```bash
-mvn initialize exec:exec -Dexec.args="run ./mvnw spring-boot:run"
-```
-
-Your application reads values exactly as before:
+## Plain Java
 
 ```java
-@Value("${PORT}")
-private int port;   // supplied by envy at boot
+import io.envy.Envy;
+import java.util.Map;
+
+Map<String, String> config = Envy.load();
+String dbUrl  = config.get("DATABASE_URL");
+int port      = Integer.parseInt(config.get("PORT"));
 ```
+
+## Spring Boot
+
+```java
+@Configuration
+public class EnvyConfigSource {
+    @Bean
+    public Map<String, String> envyProperties() {
+        return Envy.load();
+    }
+}
+
+// then anywhere:
+@Value("#{envyProperties['DATABASE_URL']}")
+private String databaseUrl;
+```
+
+Or bridge into Spring's `Environment` with a `MapPropertySource`:
+
+```java
+ConfigurableApplicationContext ctx = SpringApplication.run(App.class);
+ctx.getEnvironment().getPropertySources()
+   .addFirst(new MapPropertySource("envy", Envy.load()));
+```
+
+## Behaviour (identical to the Rust core)
+
+- upward search for `envy.yaml` from any working directory
+- precedence: OS env → branch overlay (`envy.local.<branch>.yaml`) → `envy.local.yaml` → schema default → generated mock
+- validates integer / number / boolean types and `uri` / `email` / `uuid` formats
+- typo'd keys and schemes reported with "did you mean …?" suggestions
+- throws one `Envy.EnvyException` listing every problem at once
+- results cached per schema location (`Envy.load()` is cheap after first call)
+
+## Building & testing
+
+```bash
+mvn package    # compiles + runs unit tests
+```
+
+## Alternative: wrap the binary instead
+
+Prefer zero JVM dependencies? The envy CLI injects environment variables into
+any process, so plain `envy run ./mvnw spring-boot:run` works with zero code
+changes — see the repository README. This library exists for teams who want
+validation and typing *inside* the JVM.
