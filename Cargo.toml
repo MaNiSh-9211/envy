@@ -1,6 +1,6 @@
 [package]
 name = "envy"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "envy — universal, blazing-fast environment configuration manager for every stack"
 license = "MIT"
@@ -13,6 +13,12 @@ clap = { version = "4", features = ["derive"] }
 colored = "2"
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
+serde_json = "1"
+aes-gcm = "0.10"
+base64 = "0.22"
+keyring = { version = "3", features = ["windows-native", "apple-native", "sync-secret-service"] }
+rand = "0.8"
+sha2 = "0.10"
 
 [profile.release]
 lto = true

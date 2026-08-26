@@ -16,7 +16,7 @@ fn default_version() -> String {
     "1".into()
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct VarSpec {
     #[serde(default = "default_type")]
     pub r#type: String,

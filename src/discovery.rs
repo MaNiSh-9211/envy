@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 pub const SCHEMA_FILE: &str = "envy.yaml";
 pub const LOCAL_FILE: &str = "envy.local.yaml";
 
-const SKIP_DIRS: &[&str] = &[
+pub(crate) const SKIP_DIRS: &[&str] = &[
     ".git",
     ".hg",
     ".svn",

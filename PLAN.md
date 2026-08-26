@@ -99,17 +99,25 @@ Desktop/envy/
 
 ## Roadmap
 
-- [x] **M0** Toolchain + repo scaffold (this commit)
+- [x] **M0** Toolchain + repo scaffold
 - [x] **M1** Schema/local parsing, resolver with type+format validation, unit tests
 - [x] **M2** CLI: init / run / validate / list / setup, process injection, exit codes
-- [ ] **M3** Git-branch aware config hot-swapping (`envy.local.<branch>.yaml` overlay)
-- [ ] **M4** Leak blocker pre-commit hook (`envy hook install`) scanning staged diffs
-- [ ] **M5** Vault references in values (`op://…`, `aws://…`, `vault://…`) resolved in-memory
-- [ ] **M6** Encryption-at-rest via OS keystore (TPM / Secure Enclave / Credential Manager)
-- [ ] **M7** Release pipeline (CI + tag-triggered multi-platform release workflows done; npm/pip/gem/go/homebrew wrapper packages scaffolded in `packages/`) → remaining: first tagged release, publish wrappers, fill Homebrew sha256s
-- [ ] **M8** Network egress guard for dev processes (blocklist of secret strings)
-- [ ] **M9** Type-safe SDK generation (TS declarations, Go struct, Java class)
-- [ ] **M10** `envy doctor` — did-you-mean suggestions for bad values/schemes
+- [x] **M3** Git-branch aware config hot-swapping (`envy.local.<branch>.yaml` overlay)
+- [x] **M4** Leak blocker pre-commit hook (`envy hook install`) scanning staged diffs
+- [x] **M5** Vault references in values (`op://…`, `vault://…`, `aws://…`) resolved in-memory
+- [x] **M6** Encryption-at-rest via OS keystore (AES-256-GCM; Credential Manager / Keychain / Secret Service)
+- [ ] **M7** Release pipeline (workflows + wrapper packages scaffolded in `packages/`) → remaining: first tagged release, publish wrappers, fill Homebrew sha256s
+- [x] **M8** Runtime egress guard: `envy run --guard` streams child output through a secret scanner and terminates on leak (exit code 2)
+- [x] **M9** Type-safe SDK generation: `envy gen typescript|go|java|python`
+- [x] **M10** `envy doctor` — did-you-mean fixes for bad values/schemes/keys (Damerau-Levenshtein)
+- [x] Bonus: `envy diff <env>` live environment comparison (secrets masked)
+- [x] Bonus: `mock: true` self-mocking — deterministic placeholder values so dev keeps coding offline
+
+### Future ideas
+
+- Network-level egress proxying (beyond output scanning)
+- Embedded offline model for smarter error explanations
+- `envy import` from .env / application.properties / docker-compose env
 
 ## Testing Strategy
 

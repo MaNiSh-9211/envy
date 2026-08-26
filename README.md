@@ -84,17 +84,48 @@ All of them install the same native Rust binary.
 | command | behaviour |
 |---|---|
 | `envy init` | scaffold an `envy.yaml` + gitignore `envy.local.yaml` |
-| `envy run <cmd…>` | resolve → prompt → validate → spawn with injected env; propagates exit codes |
+| `envy run [--guard] <cmd…>` | resolve → prompt → validate → spawn with injected env; `--guard` kills the process if a secret leaks into output (exit 2) |
 | `envy validate` | CI-friendly non-interactive check |
 | `envy list` | resolved table, secrets masked, `[source]` tags |
 | `envy setup` | scan a monorepo, fill missing values for every service sequentially |
+| `envy diff <env>` | compare local vs `envy.<env>.yaml` — secrets masked, mismatches highlighted |
+| `envy doctor` | explains every problem and offers one-keystroke auto-fixes (`postgersql://` → `postgresql://`) |
+| `envy lock` / `envy unlock` | AES-256-GCM encrypt `envy.local.yaml` at rest, key held in the OS keystore |
+| `envy hook install` | pre-commit hook that blocks commits containing your declared secrets |
+| `envy scan [--all]` | leak-scan staged changes (or the whole tree) |
+| `envy gen <ts\|go\|java\|python>` | generate type-safe config bindings → autocomplete, no typos |
 
 ### Variable precedence
 
 1. Real OS environment variable
-2. `envy.local.yaml`
-3. Schema default
-4. Interactive prompt (required vars only) — answers are saved locally
+2. **Branch overlay** — `envy.local.<branch>.yaml` (git-branch aware hot-swapping)
+3. `envy.local.yaml`
+4. Schema default
+5. **Generated mock** when the schema says `mock: true`
+6. Interactive prompt (required vars) — answers saved locally
+
+### Secrets that never touch disk
+
+Values can be live vault references resolved in-memory at boot:
+
+```yaml
+values:
+  API_SECRET: "op://dev-vault/stripe/key"        # 1Password CLI
+  DB_PASSWORD: "vault://secret/data/db#password" # Vault CLI
+  STRIPE_KEY: "aws://prod/stripe#api_key"        # AWS Secrets Manager
+```
+
+Run `--offline` to skip resolution on a plane.
+
+### Encryption at rest
+
+```bash
+envy lock     # envy.local.yaml becomes ciphertext; key lives in
+              # Windows Credential Manager / macOS Keychain / Secret Service
+envy unlock   # back to plaintext for manual editing
+```
+
+AES-256-GCM. Decryption happens in memory only, for milliseconds per boot.
 
 ### Validation built in
 
