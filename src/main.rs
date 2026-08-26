@@ -1,18 +1,6 @@
 mod cli;
 mod commands;
-mod crypto;
-mod discovery;
-mod gencode;
-mod git;
 mod guard;
-mod leakscan;
-mod local;
-mod prompt;
-mod resolver;
-mod schema;
-mod store;
-mod suggest;
-mod vault;
 
 use clap::Parser;
 use cli::{Cli, Commands};

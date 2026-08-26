@@ -83,8 +83,11 @@ Load and validate `envy.yaml` natively inside your app:
 
 | Library | Install | Import |
 |---|---|---|
+| Rust (core crate) | `cargo add envy` | `envy::resolver::resolve(&schema, &layers, &opts)` |
 | TypeScript / Node | `npm install @envy/config` | [`loadConfig()`](packages/typescript#readme) — fully typed, throws `EnvyError` with all problems |
 | Java / JVM / Spring | `io.github.manish-9211:envy-java` | [`Envy.load()`](packages/maven#readme) — Map<String,String>, cached |
+| PHP 8.1+ | `composer require manish-9211/envy-php` | [`Envy::load()`](packages/php#readme) — array, cached |
+| .NET / C# | `dotnet add package Envy.Config` | [`EnvyLoader.Load()`](packages/dotnet#readme) — IReadOnlyDictionary |
 
 All of them share the exact same precedence, validation and mock semantics as
 the core Rust engine.

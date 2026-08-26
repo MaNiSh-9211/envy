@@ -1,4 +1,4 @@
-use crate::discovery;
+use envy::discovery;
 use anyhow::{bail, Context, Result};
 use colored::Colorize;
 

@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 pub fn validate(offline: bool) -> Result<bool> {
     let app = load_app()?;
-    let resolved = app.resolve(&crate::resolver::Options {
+    let resolved = app.resolve(&envy::resolver::Options {
         interactive: false,
         resolve_vault: !offline,
     });
@@ -33,7 +33,7 @@ pub fn validate(offline: bool) -> Result<bool> {
 
 pub fn list(offline: bool) -> Result<()> {
     let app = load_app()?;
-    let resolved = app.resolve(&crate::resolver::Options {
+    let resolved = app.resolve(&envy::resolver::Options {
         interactive: false,
         resolve_vault: !offline,
     });
@@ -77,7 +77,7 @@ pub struct DiffArgs {
 
 pub fn diff(args: DiffArgs, offline: bool) -> Result<()> {
     let app = load_app()?;
-    let local_resolved = app.resolve(&crate::resolver::Options {
+    let local_resolved = app.resolve(&envy::resolver::Options {
         interactive: false,
         resolve_vault: !offline,
     });
@@ -88,7 +88,7 @@ pub fn diff(args: DiffArgs, offline: bool) -> Result<()> {
         .dir()
         .to_path_buf()
         .join(format!("envy.{}.yaml", args.env));
-    let remote = crate::store::load(&remote_path).with_context(|| {
+    let remote = envy::store::load(&remote_path).with_context(|| {
         format!(
             "loading environment '{}' (expected {})",
             args.env,
@@ -122,7 +122,7 @@ pub fn diff(args: DiffArgs, offline: bool) -> Result<()> {
         let remote_value = remote
             .values
             .get(key)
-            .and_then(|v| crate::resolver::scalar_to_string(v).ok());
+            .and_then(|v| envy::resolver::scalar_to_string(v).ok());
 
         let mask = |v: Option<&String>| -> String {
             match v {

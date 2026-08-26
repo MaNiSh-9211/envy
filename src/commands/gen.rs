@@ -1,5 +1,5 @@
 use super::load_app;
-use crate::gencode::{self, Target};
+use envy::gencode::{self, Target};
 use anyhow::{Context, Result};
 use colored::Colorize;
 

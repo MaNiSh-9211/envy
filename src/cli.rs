@@ -109,13 +109,13 @@ pub enum GenTarget {
     Python,
 }
 
-impl From<&GenTarget> for crate::gencode::Target {
+impl From<&GenTarget> for envy::gencode::Target {
     fn from(target: &GenTarget) -> Self {
         match target {
-            GenTarget::TypeScript => crate::gencode::Target::TypeScript,
-            GenTarget::Go => crate::gencode::Target::Go,
-            GenTarget::Java => crate::gencode::Target::Java,
-            GenTarget::Python => crate::gencode::Target::Python,
+            GenTarget::TypeScript => envy::gencode::Target::TypeScript,
+            GenTarget::Go => envy::gencode::Target::Go,
+            GenTarget::Java => envy::gencode::Target::Java,
+            GenTarget::Python => envy::gencode::Target::Python,
         }
     }
 }

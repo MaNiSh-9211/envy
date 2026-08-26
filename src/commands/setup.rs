@@ -1,8 +1,8 @@
 use super::{interactive, load_project_at, report_problems};
-use crate::discovery;
-use crate::git;
-use crate::resolver::{Layers, Options};
-use crate::store;
+use envy::discovery;
+use envy::git;
+use envy::resolver::{Layers, Options};
+use envy::store;
 use anyhow::Result;
 use colored::Colorize;
 
@@ -64,7 +64,7 @@ pub fn execute(depth: usize, offline: bool) -> Result<()> {
             interactive: interactive_session,
             resolve_vault: !offline,
         };
-        let resolved = crate::resolver::resolve(&project.schema, &layers, &opts);
+        let resolved = envy::resolver::resolve(&project.schema, &layers, &opts);
         report_problems(&resolved);
 
         if !resolved.prompted.is_empty() {

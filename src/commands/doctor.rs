@@ -1,11 +1,11 @@
 use super::{interactive, load_app};
-use crate::suggest;
+use envy::suggest;
 use anyhow::Result;
 use colored::Colorize;
 
 pub fn execute(offline: bool) -> Result<()> {
     let app = load_app()?;
-    let opts = crate::resolver::Options {
+    let opts = envy::resolver::Options {
         interactive: interactive(),
         resolve_vault: !offline,
     };
@@ -54,7 +54,7 @@ pub fn execute(offline: bool) -> Result<()> {
     Ok(())
 }
 
-fn offer_value_fixes(app: &super::App, opts: &crate::resolver::Options) -> Result<usize> {
+fn offer_value_fixes(app: &super::App, opts: &envy::resolver::Options) -> Result<usize> {
     use std::io::{self, BufRead, Write};
 
     let mut fixed = 0usize;
@@ -62,7 +62,7 @@ fn offer_value_fixes(app: &super::App, opts: &crate::resolver::Options) -> Resul
         let Some(raw) = app.resolve(opts).values.get(key).cloned() else {
             continue;
         };
-        let problem = match crate::resolver::validate(spec, &raw) {
+        let problem = match envy::resolver::validate(spec, &raw) {
             Ok(()) => continue,
             Err(problem) => problem,
         };
@@ -99,7 +99,7 @@ fn offer_value_fixes(app: &super::App, opts: &crate::resolver::Options) -> Resul
             let mut updated: crate::commands::Values =
                 current.cloned().unwrap_or_default();
             updated.insert(key.clone(), serde_yaml::Value::String(fixed_value));
-            crate::store::save_smart(target_path, &updated)?;
+            envy::store::save_smart(target_path, &updated)?;
             println!("{} wrote corrected value for {key}", "✔".green());
             fixed += 1;
         }

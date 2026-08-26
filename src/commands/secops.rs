@@ -1,5 +1,5 @@
 use super::load_app;
-use crate::leakscan;
+use envy::leakscan;
 use anyhow::{anyhow, bail, Result};
 use colored::Colorize;
 use std::path::{Path, PathBuf};
@@ -9,7 +9,7 @@ const BLOCK_END: &str = "# <<< envy-leak-guard <<<";
 
 pub fn lock() -> Result<()> {
     let app = load_app()?;
-    crate::store::lock(&app.project.local_path)?;
+    envy::store::lock(&app.project.local_path)?;
     println!(
         "{} locked {} — key stored in the OS keystore (Windows Credential Manager / macOS Keychain / Secret Service)",
         "🔒".green().bold(),
@@ -22,7 +22,7 @@ pub fn lock() -> Result<()> {
 
 pub fn unlock() -> Result<()> {
     let app = load_app()?;
-    crate::store::unlock(&app.project.local_path)?;
+    envy::store::unlock(&app.project.local_path)?;
     println!(
         "{} unlocked {} — file is plaintext YAML again",
         "🔓".green().bold(),
@@ -175,7 +175,7 @@ pub fn execute_scan(args: ScanArgs, offline: bool) -> Result<i32> {
 
     let declared: Vec<(String, String)> = match &app {
         Some(app) => {
-            let opts = crate::resolver::Options {
+            let opts = envy::resolver::Options {
                 interactive: false,
                 resolve_vault: !offline,
             };

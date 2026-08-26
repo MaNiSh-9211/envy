@@ -17,7 +17,7 @@ pub fn execute(args: RunArgs, offline: bool) -> Result<i32> {
     }
 
     let app = load_app()?;
-    let opts = crate::resolver::Options {
+    let opts = envy::resolver::Options {
         interactive: interactive(),
         resolve_vault: !offline,
     };

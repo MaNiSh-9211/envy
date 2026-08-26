@@ -6,12 +6,12 @@ pub mod run;
 pub mod secops;
 pub mod setup;
 
-use crate::discovery;
-use crate::git;
-use crate::prompt;
-use crate::resolver::{self, Layers, Options, Resolved};
-use crate::schema::EnvySchema;
-use crate::store;
+use envy::discovery;
+use envy::git;
+use envy::prompt;
+use envy::resolver::{self, Layers, Options, Resolved};
+use envy::schema::EnvySchema;
+use envy::store;
 use anyhow::{Context, Result};
 use colored::Colorize;
 use std::collections::BTreeMap;

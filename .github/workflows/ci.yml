@@ -49,3 +49,34 @@ jobs:
       - name: Build & test envy-java
         working-directory: packages/maven
         run: mvn -B -q package
+
+  php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+      - name: Validate composer.json
+        working-directory: packages/php
+        run: composer validate --strict
+      - name: Lint sources
+        working-directory: packages/php
+        run: find src scripts -name "*.php" -print0 | xargs -0 -n1 php -l
+      - name: Smoke test
+        working-directory: packages/php
+        run: |
+          composer install --prefer-dist --no-progress --no-interaction
+          composer smoke
+
+  dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build Envy.Config
+        working-directory: packages/dotnet
+        run: dotnet build -c Release
