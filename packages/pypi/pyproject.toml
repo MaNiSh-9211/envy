@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "envy-cli"
+version = "0.1.0"
+description = "envy — universal environment manager for every stack (installs the native Rust binary)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "MaNiSh-9211" }]
+keywords = ["env", "environment", "dotenv", "config", "monorepo", "secrets"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Environment :: Console",
+]
+
+[project.urls]
+Homepage = "https://github.com/MaNiSh-9211/envy"
+Repository = "https://github.com/MaNiSh-9211/envy"
+
+[project.scripts]
+envy = "envy_cli:main"
+
+[tool.setuptools]
+packages = ["envy_cli"]

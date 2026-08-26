@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require "envy/cli"
+
+exit Envy::CLI.run(ARGV)

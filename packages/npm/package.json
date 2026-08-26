@@ -1,0 +1,36 @@
+{
+  "name": "envy-cli",
+  "version": "0.1.0",
+  "description": "envy — universal environment manager for every stack (installs the native Rust binary)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MaNiSh-9211/envy"
+  },
+  "homepage": "https://github.com/MaNiSh-9211/envy#readme",
+  "bugs": "https://github.com/MaNiSh-9211/envy/issues",
+  "bin": {
+    "envy": "bin.js"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "files": [
+    "bin.js",
+    "install.js"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "keywords": [
+    "env",
+    "environment",
+    "dotenv",
+    "config",
+    "configuration",
+    "monorepo",
+    "spring-boot",
+    "python",
+    "secrets"
+  ]
+}

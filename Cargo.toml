@@ -1,0 +1,20 @@
+[package]
+name = "envy"
+version = "0.1.0"
+edition = "2021"
+description = "envy — universal, blazing-fast environment configuration manager for every stack"
+license = "MIT"
+repository = "https://github.com/MaNiSh-9211/envy"
+readme = "README.md"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+colored = "2"
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1

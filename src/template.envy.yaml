@@ -1,0 +1,25 @@
+version: "1"
+service: my-service
+
+config:
+  PORT:
+    type: integer
+    default: 8080
+    description: Port the development server binds to
+
+  DATABASE_URL:
+    type: string
+    format: uri
+    required: true
+    description: Primary database connection string
+
+  STRIPE_SECRET_KEY:
+    type: string
+    secret: true
+    required: true
+    description: Billing provider key (stored locally, never committed)
+
+  FEATURE_FLAG_NEW_UI:
+    type: boolean
+    default: false
+    description: Toggle the redesigned dashboard

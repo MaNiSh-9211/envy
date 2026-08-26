@@ -1,0 +1,9 @@
+/target
+node_modules/
+dist/
+*.gem
+__pycache__/
+*.egg-info/
+packages/npm/bin/
+.env
+envy.local.yaml
